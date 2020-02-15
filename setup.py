@@ -1,9 +1,6 @@
 import setuptools
 from epicstore_api import __version__ as version, __author__ as author
 
-with open('requirements.txt') as f:
-    requirements = f.read().splitlines()
-
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
@@ -17,7 +14,7 @@ setuptools.setup(
     url='https://github.com/SD4RK/epicstore_api',
     license='MIT',
     include_package_data=True,
-    install_requires=requirements,
+    install_requires=['requests'],
     download_url=f'https://github.com/SD4RK/epicstore_api/archive/v_{version}.tar.gz',
     packages=setuptools.find_packages(),
     classifiers=[
