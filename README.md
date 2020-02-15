@@ -42,3 +42,6 @@ You can find more examples in the examples directory.
 
 ### Contributing
 Feel free to contribute by creating PRs and sending your issues
+
+## Links
+* [Documentation](https://epicstore-api.readthedocs.io/en/latest/)
