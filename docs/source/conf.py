@@ -51,6 +51,8 @@ html_theme = 'alabaster'
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
 
+master_doc = 'index'  # for old versions of sphinx
+
 
 def remove_module_docstring(app, what, name, obj, options, lines):
     print(app, what, name, obj, options, lines)
