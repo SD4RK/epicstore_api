@@ -19,7 +19,7 @@ setuptools.setup(
     include_package_data=True,
     install_requires=requirements,
     download_url=f'https://github.com/SD4RK/epicstore_api/archive/v_{version}.tar.gz',
-    packages=['epicstore_api'],
+    packages=setuptools.find_packages(),
     classifiers=[
         'License :: OSI Approved :: MIT License',
         'Intended Audience :: Developers',
