@@ -16,5 +16,5 @@ from .models import *
 from .exc import EGSException, EGSNotFound
 
 
-__version__ = '0.0.3'
+__version__ = '0.0.4'
 __author__ = 'SD4RK'

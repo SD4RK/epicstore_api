@@ -238,11 +238,11 @@ class EpicGamesStoreAPI:
         **variables
     ) -> dict:
         func = getattr(self._session, method.lower())
-        base_url = 'https://www.epicgames.com/store'
-        base_url += '/api' if not use_locale else f'/{self.locale}/api'
+        base_url = 'https://store-content.ak.epicgames.com'
+        base_url += '/api' if not use_locale else f'/api/{self.locale}'
         response = func(
             base_url + endpoint,
-            json=variables
+            data=variables
         )
         if response.status_code == 404:
             raise EGSException(f'Page with endpoint {endpoint} was not found')
