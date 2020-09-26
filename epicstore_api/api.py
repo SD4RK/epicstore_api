@@ -253,6 +253,7 @@ class EpicGamesStoreAPI:
     def _make_graphql_query(
         self,
         query_string,
+        headers={},
         *multiple_query_variables,
         **variables
     ) -> dict:
@@ -261,7 +262,6 @@ class EpicGamesStoreAPI:
             # This variables are default and exist in all graphql queries
             response = self._session.post(
                 'https://graphql.epicgames.com/graphql',
-                json={'query': query_string, 'variables': variables}
             ).json()
         else:
             data = []
@@ -277,7 +277,8 @@ class EpicGamesStoreAPI:
                 })
             response = self._session.post(
                 'https://graphql.epicgames.com/graphql',
-                json=data
+                json=data,
+                headers=headers
             ).json()
         self._get_errors(response)
         return response
