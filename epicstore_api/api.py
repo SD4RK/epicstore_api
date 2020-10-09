@@ -82,8 +82,21 @@ class EpicGamesStoreAPI:
         Returns a JSON data about store page
         """
         return self._make_api_query(
-            '/content/store', method='GET'
+            '/content/store', method='GET', use_locale=True
         )
+
+    def get_free_games(self, allow_countries: str = None) -> dict:
+        """Returns the games from "Free Games" section in the EGS."""
+        if allow_countries is None:
+            allow_countries = self.country
+        api_uri = (
+            'https://store-site-backend-static.ak.epicgames.com/'
+            'freeGamesPromotions?locale={}&country={}&allowCountries={}'
+        )
+        api_uri = api_uri.format(self.locale, self.country, allow_countries)
+        data = requests.get(api_uri).json()
+        self._get_errors(data)
+        return data
 
     def get_mver_status(self) -> bool:
         return self._make_api_query(
