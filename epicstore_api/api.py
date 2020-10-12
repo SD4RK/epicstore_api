@@ -235,22 +235,22 @@ class EpicGamesStoreAPI:
         self,
         count: int = 30,
         product_type: Union[EGSProductType, str] = EGSProductType.ALL_PRODUCTS,
-        allowCountries: str = 'US',
+        allow_countries: str = 'US',
         namespace: str = '',
         sort_by: str = 'title',
         sort_dir: str = 'ASC',
-        releaseDate: str = None,
+        release_date: str = None,
         start: int = 0,
         keywords: str = '',
         categories: List[EGSCategory] = None,
-        withPrice: bool = True
+        with_price: bool = True
     ) -> dict:
         """
         Fetches a store games with given parameters
 
         :param count: Count of  products you need to fetch
         :param product_type: Product type(s) you need to get from EGS
-        :param allowCountries: Products in the country. Default to 'US'
+        :param allow_countries: Products in the country. Default to 'US'
         :param namespace: Products namespace ('' = all namespaces)
         :param sort_by: Parameter which EGS will use to sort products:
 
@@ -262,7 +262,7 @@ class EpicGamesStoreAPI:
         - **ASC**: Sorts from higher ``sort_by`` parameter to lower
         - **DESC**: Sorts from lower ``sort_by`` parameter to higher
 
-        :param releaseDate: Available when ``sort_by`` is 'releaseDate'.
+        :param release_date: Available when ``sort_by`` is 'releaseDate'.
 
         - Date is in ISO 8601 format. General format: f'[{startDate}, {endDate}]'.
         - Example: '[2019-09-16T14:02:36.304Z, 2019-09-26T14:02:36.304Z]'
@@ -271,7 +271,7 @@ class EpicGamesStoreAPI:
         :param start: From which game EGS should start
         :param keywords: Search keywords
         :param categories: Categories you need to fetch
-        :param withPrice: To fetch price or not
+        :param with_price: To fetch price or not
         :rtype: dict
         :raises: ValueError  if ``sort_by`` not equals to **ASC** or **DESC**
         """
@@ -290,15 +290,15 @@ class EpicGamesStoreAPI:
             headers={'content-type': 'application/json;charset=UTF-8'},
             count=count,
             category=product_type,
-            allowCountries=allowCountries,
+            allow_countries=allow_countries,
             namespace=namespace,
             sortBy=sort_by,
             sortDir=sort_dir,
-            releaseDate=releaseDate,
+            release_date=release_date,
             start=start,
             keywords=keywords,
             tag=categories,
-            withPrice=withPrice
+            with_price=with_price
         )
 
     def _make_api_query(
