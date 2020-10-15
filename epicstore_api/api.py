@@ -35,7 +35,8 @@ from .queries import (CATALOG_QUERY,
                       CATALOG_TAGS_QUERY,
                       FEED_QUERY,
                       PREREQUISITES_QUERY,
-                      OFFERS_QUERY)
+                      OFFERS_QUERY,
+                      STORE_QUERY)
 
 
 class OfferData(NamedTuple):
@@ -243,6 +244,76 @@ class EpicGamesStoreAPI:
             tag=categories
         )
 
+    def fetch_store_games(
+        self,
+        count: int = 30,
+        product_type: Union[EGSProductType, str] = EGSProductType.ALL_PRODUCTS,
+        allow_countries: str = 'US',
+        namespace: str = '',
+        sort_by: str = 'title',
+        sort_dir: str = 'ASC',
+        release_date: str = None,
+        start: int = 0,
+        keywords: str = '',
+        categories: List[EGSCategory] = None,
+        with_price: bool = True
+    ) -> dict:
+        """
+        Fetches a store games with given parameters
+
+        :param count: Count of  products you need to fetch
+        :param product_type: Product type(s) you need to get from EGS
+        :param allow_countries: Products in the country. Default to 'US'
+        :param namespace: Products namespace ('' = all namespaces)
+        :param sort_by: Parameter which EGS will use to sort products:
+
+        - **releaseDate**:  Sorts by release date
+        - **title**: Sorts by game title, alphabetical
+
+        :param sort_dir: You can use only **ASC** or **DESC**:
+
+        - **ASC**: Sorts from higher ``sort_by`` parameter to lower
+        - **DESC**: Sorts from lower ``sort_by`` parameter to higher
+
+        :param release_date: Available when ``sort_by`` is 'releaseDate'.
+
+        - Date is in ISO 8601 format. General format: f'[{startDate}, {endDate}]'.
+        - Example: '[2019-09-16T14:02:36.304Z, 2019-09-26T14:02:36.304Z]'
+        - Leaving ``startDate`` or ``endDate`` blank will not limit start/end date.
+
+        :param start: From which game EGS should start
+        :param keywords: Search keywords
+        :param categories: Categories you need to fetch
+        :param with_price: To fetch price or not
+        :rtype: dict
+        :raises: ValueError  if ``sort_by`` not equals to **ASC** or **DESC**
+        """
+        sort_dir = sort_dir.upper()
+        if sort_dir not in ('ASC', 'DESC'):
+            raise ValueError(f'Parameter ``sort_dir`` have to be equals to'
+                             f' ASC or DESC, not to {sort_dir}')
+        if categories is None:
+            categories = ''
+        else:
+            categories = EGSCategory.join_categories(*categories)
+        if isinstance(product_type, EGSProductType):
+            product_type = product_type.value
+        return self._make_graphql_query( #this type of fetch needs headers
+            STORE_QUERY,
+            headers={'content-type': 'application/json;charset=UTF-8'},
+            count=count,
+            category=product_type,
+            allow_countries=allow_countries,
+            namespace=namespace,
+            sortBy=sort_by,
+            sortDir=sort_dir,
+            release_date=release_date,
+            start=start,
+            keywords=keywords,
+            tag=categories,
+            with_price=with_price
+        )
+
     def _make_api_query(
         self,
         endpoint: str,
@@ -266,6 +337,7 @@ class EpicGamesStoreAPI:
     def _make_graphql_query(
         self,
         query_string,
+        headers={},
         *multiple_query_variables,
         **variables
     ) -> dict:
@@ -274,7 +346,8 @@ class EpicGamesStoreAPI:
             # This variables are default and exist in all graphql queries
             response = self._session.post(
                 'https://graphql.epicgames.com/graphql',
-                json={'query': query_string, 'variables': variables}
+                json={'query': query_string, 'variables': variables},
+                headers=headers
             ).json()
         else:
             data = []
@@ -290,7 +363,8 @@ class EpicGamesStoreAPI:
                 })
             response = self._session.post(
                 'https://graphql.epicgames.com/graphql',
-                json=data
+                json=data,
+                headers=headers
             ).json()
         self._get_errors(response)
         return response
