@@ -1,7 +1,6 @@
 # epicstore_api
 
-A library that provide you a functionality for work with Epic Games Store 
-easy and fast
+An unofficial library to work with Epic Games Store Web API.
 
 ## Installing
 
