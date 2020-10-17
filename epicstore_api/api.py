@@ -36,7 +36,10 @@ from .queries import (CATALOG_QUERY,
                       FEED_QUERY,
                       PREREQUISITES_QUERY,
                       OFFERS_QUERY,
-                      STORE_QUERY)
+                      STORE_QUERY,
+                      ADDONS_QUERY,
+                      MEDIA_QUERY,
+                      PRODUCT_REVIEWS_QUERY)
 
 
 class OfferData(NamedTuple):
@@ -125,6 +128,7 @@ class EpicGamesStoreAPI:
         """
         return self._make_graphql_query(
             OFFERS_QUERY,
+            {},
             *[{
                 'productNamespace': offer.namespace,
                 'offerId': offer.offer_id,
@@ -135,6 +139,78 @@ class EpicGamesStoreAPI:
                 'calculateTax': should_calculate_tax
             } for offer in offers]
         )
+
+    def fetch_media(self, media_ref_id: str) -> dict:
+        """Returns media-file (type of the file, its url and so on) by the
+        file's media ref ID.
+
+        :param media_ref_id: File's media ref ID.
+        """
+        return self._make_graphql_query(
+            MEDIA_QUERY,
+            mediaRefId=media_ref_id
+        )
+
+    def fetch_multiple_media_files(self, *media_ref_ids: str):
+        """Equivalent to `fetch_media` function, except this one can fetch
+        a few media files at the same moment (using only one request)."""
+        return self._make_graphql_query(
+            MEDIA_QUERY,
+            {},
+            *[{
+                'mediaRefId': media_ref_id
+            } for media_ref_id in media_ref_ids]
+        )
+
+    def get_addons_by_namespace(
+        self,
+        namespace: str,
+        categories: str = 'addons|digitalextras',
+        count: int = 250,
+        sort_by: str = 'releaseDate',
+        sort_dir: str = 'DESC'
+    ):
+        """Returns product's addons by product's namespace.
+
+        :param namespace: Product's namespace, can be obtained using the
+        :meth:`epicstore_api.api.EpicGamesStoreAPI.get_product` function.
+        :param categories: Addon's categories.
+        :param count: Count of addon's you want EGS to give you.
+        :param sort_by: By which key EGS should sort addons.
+        :param sort_dir: You can use only **ASC** or **DESC**:
+
+        - **ASC**: Sorts from higher ``sort_by`` parameter to lower
+        - **DESC**: Sorts from lower ``sort_by`` parameter to higher
+        """
+        sort_dir = sort_dir.upper()
+        if sort_dir not in ('ASC', 'DESC'):
+            raise ValueError(f'Parameter ``sort_dir`` have to be equals to'
+                             f' ASC or DESC, not to {sort_dir}')
+        return self._make_graphql_query(
+            ADDONS_QUERY,
+            namespace=namespace,
+            count=count,
+            categories=categories,
+            sortBy=sort_by,
+            sortDir=sort_dir
+        )
+
+    def get_product_reviews(self, product_sku: str) -> dict:
+        """Returns product's reviews by product's sku.
+
+        :param product_sku: SKU of the Product. Usually just slug of the
+        product with `EPIC_` prefix."""
+        try:
+            return self._make_graphql_query(
+                PRODUCT_REVIEWS_QUERY,
+                sku=product_sku
+            )
+        except EGSNotFound as exc:
+            exc.message = (
+                'There are no reviews for this product, '
+                'or the given slug ({}) is incorrect.'.format(product_sku)
+            )
+            raise
 
     def fetch_prerequisites(self, *offers: OfferData) -> dict:
         """
@@ -385,10 +461,17 @@ class EpicGamesStoreAPI:
                 service_response = json.loads(
                     error['serviceResponse']
                 )
-                if service_response['errorCode'].endswith('not_found'):
-                    raise EGSNotFound(
-                        service_response['errorMessage'],
-                        service_response['numericErrorCode'],
-                        service_response
-                    )
+                if isinstance(service_response, dict):
+                    if service_response['errorCode'].endswith('not_found'):
+                        raise EGSNotFound(
+                            service_response['errorMessage'],
+                            service_response['numericErrorCode'],
+                            service_response
+                        )
+                elif isinstance(service_response, str):
+                    if service_response == 'not found':
+                        raise EGSNotFound(
+                            'The resource was not found, '
+                            'No more data provided by Epic Games Store.'
+                        )
                 # FIXME: Need to handle more errors than the code is handling now
