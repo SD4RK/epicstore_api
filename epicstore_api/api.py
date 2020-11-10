@@ -64,27 +64,22 @@ class EpicGamesStoreAPI:
         self.country = country
 
     def get_product_mapping(self) -> dict:
-        """
-        Returns product mapping in {namespace: slug} format
-        """
+        """Returns product mapping in {namespace: slug} format."""
         return self._make_api_query(
             '/content/productmapping', method='GET'
         )
 
     def get_product(self, slug: str) -> dict:
-        """
-        Returns a product's data by slug
+        """Returns a product's data by slug.
 
-        :param slug: Product's slug
+        :param slug: Product's slug.
         """
         return self._make_api_query(
             f'/content/products/{slug}', method='GET', use_locale=True
         )
 
     def get_store(self) -> dict:
-        """
-        Returns a JSON data about store page
-        """
+        """Returns a JSON data about store page."""
         return self._make_api_query(
             '/content/store', method='GET', use_locale=True
         )
@@ -108,9 +103,7 @@ class EpicGamesStoreAPI:
         )['result']
 
     def get_epic_store_status(self) -> dict:
-        """
-        Returns an Epic Games Store server status
-        """
+        """Returns an Epic Games Store server status."""
         return self._session.get(
             'https://status.epicgames.com/api/v2/status.json'
         ).json()
@@ -118,13 +111,14 @@ class EpicGamesStoreAPI:
     def get_offers_data(
         self,
         *offers: OfferData,
-        should_calculate_tax: bool = False
+        should_calculate_tax: bool = False,
+        include_sub_items: bool = False
     ) -> dict:
-        """
-        Get offer(s) full data by offers' id and namespace
+        """Get offer(s) full data by offers' id and namespace.
 
-        :param offers: Offers you need to get data from
+        :param offers: Offers you need to get data from.
         :param should_calculate_tax: Should EGS API calculate tax for offers?
+        :param include_sub_items: Should EGS API include sub-items for offers?
         """
         return self._make_graphql_query(
             OFFERS_QUERY,
@@ -136,7 +130,8 @@ class EpicGamesStoreAPI:
                     'offerId': offer.offer_id,
                     'quantity': 1
                 }],
-                'calculateTax': should_calculate_tax
+                'calculateTax': should_calculate_tax,
+                'includeSubItems': include_sub_items
             } for offer in offers]
         )
 
@@ -174,13 +169,14 @@ class EpicGamesStoreAPI:
 
         :param namespace: Product's namespace, can be obtained using the
         :meth:`epicstore_api.api.EpicGamesStoreAPI.get_product` function.
+
         :param categories: Addon's categories.
         :param count: Count of addon's you want EGS to give you.
         :param sort_by: By which key EGS should sort addons.
         :param sort_dir: You can use only **ASC** or **DESC**:
 
-        - **ASC**: Sorts from higher ``sort_by`` parameter to lower
-        - **DESC**: Sorts from lower ``sort_by`` parameter to higher
+        - **ASC**: Sorts from higher ``sort_by`` parameter to lower;
+        - **DESC**: Sorts from lower ``sort_by`` parameter to higher.
         """
         sort_dir = sort_dir.upper()
         if sort_dir not in ('ASC', 'DESC'):
@@ -208,13 +204,12 @@ class EpicGamesStoreAPI:
         except EGSNotFound as exc:
             exc.message = (
                 'There are no reviews for this product, '
-                'or the given slug ({}) is incorrect.'.format(product_sku)
+                'or the given sku ({}) is incorrect.'.format(product_sku)
             )
             raise
 
     def fetch_prerequisites(self, *offers: OfferData) -> dict:
-        """
-        Fetches offer(s) prerequisites
+        """Fetches offer(s) prerequisites
 
         :param offers: Offer(s) we need to get prerequisites from
         """
@@ -232,12 +227,11 @@ class EpicGamesStoreAPI:
         count: int = 10,
         category: str = ''
     ) -> dict:
-        """
-        Fetches Epic Games Store feed by given params
+        """Fetches Epic Games Store feed by given params.
 
-        :param offset: From which news (index) we need to start
-        :param count: Count of the news we need to fetch
-        :param category: News categories
+        :param offset: From which news (index) we need to start.
+        :param count: Count of the news we need to fetch.
+        :param category: News categories.
         """
         return self._make_graphql_query(
             FEED_QUERY,
@@ -248,8 +242,7 @@ class EpicGamesStoreAPI:
         )
 
     def fetch_catalog_tags(self, namespace: str = 'epic') -> dict:
-        """
-        Fetches tags for a products with namespace ``namespace``
+        """Fetches tags for a products with namespace ``namespace``
 
         :param namespace: Products' namespace (**epic** = all)
         """
@@ -259,10 +252,9 @@ class EpicGamesStoreAPI:
         )
 
     def fetch_promotions(self, namespace: str = 'epic') -> dict:
-        """
-        Fetches a global promotions
+        """Fetches a global promotions.
 
-        :param namespace: Products' namespace (**epic** = all)
+        :param namespace: Products' namespace (**epic** = all).
         """
         return self._make_graphql_query(
             PROMOTIONS_QUERY,
@@ -280,23 +272,22 @@ class EpicGamesStoreAPI:
         keywords: str = '',
         categories: List[EGSCategory] = None
     ) -> dict:
-        """
-        Fetches a catalog with given parameters
+        """Fetches a catalog with given parameters
 
-        :param count: Count of  products you need to fetch
-        :param product_type: Product type(s) you need to get from EGS
-        :param namespace: Products namespace (epic = all namespaces)
-        :param sort_by: Parameter which EGS will use to sort products
+        :param count: Count of  products you need to fetch.
+        :param product_type: Product type(s) you need to get from EGS.
+        :param namespace: Products namespace (epic = all namespaces).
+        :param sort_by: Parameter which EGS will use to sort products.
         :param sort_dir: You can use only **ASC** or **DESC**:
 
-        - **ASC**: Sorts from higher ``sort_by`` parameter to lower
-        - **DESC**: Sorts from lower ``sort_by`` parameter to higher
+        - **ASC**: Sorts from higher ``sort_by`` parameter to lower;
+        - **DESC**: Sorts from lower ``sort_by`` parameter to higher.
 
-        :param start: From which game EGS should start
-        :param keywords: Search keywords
-        :param categories: Categories you need to fetch
+        :param start: From which game EGS should start.
+        :param keywords: Search keywords.
+        :param categories: Categories you need to fetch.
         :rtype: dict
-        :raises: ValueError  if ``sort_by`` not equals to **ASC** or **DESC**
+        :raises: ValueError  if ``sort_by`` not equals to **ASC** or **DESC**.
         """
         sort_dir = sort_dir.upper()
         if sort_dir not in ('ASC', 'DESC'):
@@ -334,22 +325,21 @@ class EpicGamesStoreAPI:
         categories: List[EGSCategory] = None,
         with_price: bool = True
     ) -> dict:
-        """
-        Fetches a store games with given parameters
+        """Fetches a store games with given parameters
 
-        :param count: Count of  products you need to fetch
-        :param product_type: Product type(s) you need to get from EGS
-        :param allow_countries: Products in the country. Default to 'US'
-        :param namespace: Products namespace ('' = all namespaces)
+        :param count: Count of  products you need to fetch.
+        :param product_type: Product type(s) you need to get from EGS.
+        :param allow_countries: Products in the country. Default to 'US'.
+        :param namespace: Products namespace ('' = all namespaces).
         :param sort_by: Parameter which EGS will use to sort products:
 
-        - **releaseDate**:  Sorts by release date
-        - **title**: Sorts by game title, alphabetical
+        - **releaseDate**:  Sorts by release date;
+        - **title**: Sorts by game title, alphabetical.
 
         :param sort_dir: You can use only **ASC** or **DESC**:
 
-        - **ASC**: Sorts from higher ``sort_by`` parameter to lower
-        - **DESC**: Sorts from lower ``sort_by`` parameter to higher
+        - **ASC**: Sorts from higher ``sort_by`` parameter to lower;
+        - **DESC**: Sorts from lower ``sort_by`` parameter to higher.
 
         :param release_date: Available when ``sort_by`` is 'releaseDate'.
 
@@ -357,12 +347,12 @@ class EpicGamesStoreAPI:
         - Example: '[2019-09-16T14:02:36.304Z, 2019-09-26T14:02:36.304Z]'
         - Leaving ``startDate`` or ``endDate`` blank will not limit start/end date.
 
-        :param start: From which game EGS should start
-        :param keywords: Search keywords
-        :param categories: Categories you need to fetch
-        :param with_price: To fetch price or not
+        :param start: From which game EGS should start.
+        :param keywords: Search keywords.
+        :param categories: Categories you need to fetch.
+        :param with_price: To fetch price or not.
         :rtype: dict
-        :raises: ValueError  if ``sort_by`` not equals to **ASC** or **DESC**
+        :raises: ValueError  if ``sort_by`` not equals to **ASC** or **DESC**.
         """
         sort_dir = sort_dir.upper()
         if sort_dir not in ('ASC', 'DESC'):
@@ -374,7 +364,7 @@ class EpicGamesStoreAPI:
             categories = EGSCategory.join_categories(*categories)
         if isinstance(product_type, EGSProductType):
             product_type = product_type.value
-        return self._make_graphql_query( #this type of fetch needs headers
+        return self._make_graphql_query(  # This type of fetch needs headers.
             STORE_QUERY,
             headers={'content-type': 'application/json;charset=UTF-8'},
             count=count,
