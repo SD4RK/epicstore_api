@@ -14,7 +14,3 @@ An API wrapper for Epic Games Store
 from .api import *
 from .models import *
 from .exc import EGSException, EGSNotFound
-
-
-__version__ = '0.1.1'
-__author__ = 'SD4RK'
