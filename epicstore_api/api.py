@@ -369,15 +369,15 @@ class EpicGamesStoreAPI:
             headers={'content-type': 'application/json;charset=UTF-8'},
             count=count,
             category=product_type,
-            allow_countries=allow_countries,
+            allowCountries=allow_countries,
             namespace=namespace,
             sortBy=sort_by,
             sortDir=sort_dir,
-            release_date=release_date,
+            releaseDate=release_date,
             start=start,
             keywords=keywords,
             tag=categories,
-            with_price=with_price
+            withPrice=with_price
         )
 
     def _make_api_query(
