@@ -1,5 +1,9 @@
 # epicstore_api
 
+[![Current pypi version](https://img.shields.io/pypi/v/epicstore-api.svg)](https://pypi.org/project/epicstore-api/)
+[![Supported py versions](https://img.shields.io/pypi/pyversions/epicstore-api.svg)](https://pypi.org/project/epicstore-api/)
+[![Downloads](https://pepy.tech/badge/epicstore-api)](https://pypi.org/project/epicstore-api/)
+
 An unofficial library to work with Epic Games Store Web API.
 
 ## Installing
