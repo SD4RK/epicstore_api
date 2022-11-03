@@ -16,7 +16,7 @@ setuptools.setup(
     url='https://github.com/SD4RK/epicstore_api',
     license='MIT',
     include_package_data=True,
-    install_requires=['requests>=2.25.1'],
+    install_requires=['requests>=2.28.1'],
     download_url=f'https://github.com/SD4RK/epicstore_api/archive/v_{VERSION}.tar.gz',
     packages=setuptools.find_packages(),
     classifiers=[
@@ -24,13 +24,14 @@ setuptools.setup(
         'Intended Audience :: Developers',
         'Natural Language :: English',
         'Operating System :: OS Independent',
-        'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9',
+        'Programming Language :: Python :: 3.10',
         'Topic :: Internet',
         'Topic :: Software Development :: Libraries',
         'Topic :: Software Development :: Libraries :: Python Modules',
         'Topic :: Utilities',
     ],
-    python_requires='>=3.6'
+    python_requires='>=3.7'
 )
