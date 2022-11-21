@@ -204,7 +204,7 @@ class EpicGamesStoreAPI:
         except EGSNotFound as exc:
             exc.message = (
                 'There are no reviews for this product, '
-                'or the given sku ({}) is incorrect.'.format(product_sku)
+                f'or the given sku ({product_sku}) is incorrect.'
             )
             raise
 
