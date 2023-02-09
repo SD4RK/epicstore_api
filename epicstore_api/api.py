@@ -93,7 +93,7 @@ class EpicGamesStoreAPI:
             'freeGamesPromotions?locale={}&country={}&allowCountries={}'
         )
         api_uri = api_uri.format(self.locale, self.country, allow_countries)
-        data = requests.get(api_uri).json()
+        data = self._session.get(api_uri).json()
         self._get_errors(data)
         return data
 
