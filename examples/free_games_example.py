@@ -43,9 +43,7 @@ def main():
             # Remove the last "Z" character so Python's datetime can parse it.
             start_date = datetime.fromisoformat(start_date_iso)
             end_date = datetime.fromisoformat(end_date_iso)
-            print('* {} ({}) is FREE now, until {} --> {}'.format(
-                game_title, game_price, end_date, game_url
-            ))
+            print(f'* {game_title} ({game_price}) is FREE now, until {end_date} --> {game_url}')
         elif not game_promotions and upcoming_promotions:
             # Promotion is not active yet, but will be active soon.
             promotion_data = upcoming_promotions[0]['promotionalOffers'][0]
@@ -55,9 +53,7 @@ def main():
             # Remove the last "Z" character so Python's datetime can parse it.
             start_date = datetime.fromisoformat(start_date_iso)
             end_date = datetime.fromisoformat(end_date_iso)
-            print('* {} ({}) will be free from {} to {} UTC --> {}'.format(
-                game_title, game_price, start_date, end_date, game_url
-            ))
+            print(f'* {game_title} ({game_price}) will be free from {start_date} to {end_date} UTC --> {game_url}')
         elif game_promotions:
             # Promotion is active.
             promotion_data = game_promotions[0]['promotionalOffers'][0]
@@ -67,13 +63,9 @@ def main():
             # Remove the last "Z" character so Python's datetime can parse it.
             start_date = datetime.fromisoformat(start_date_iso)
             end_date = datetime.fromisoformat(end_date_iso)
-            print('* {} is in promotion ({} -> {}) from {} to {} UTC --> {}'.format(
-                game_title, game_price, game_price_promo, start_date, end_date, game_url
-            ))
+            print(f'* {game_title} is in promotion ({game_price} -> {game_price_promo}) from {start_date} to {end_date} UTC --> {game_url}')
         else:
-            print('* {} is always free --> {}'.format(
-                game_title, game_url
-            ))
+            print(f'* {game_title} is always free --> {game_url}')
 
 
 if __name__ == '__main__':
