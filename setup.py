@@ -1,7 +1,7 @@
 import setuptools
 
 AUTHOR = 'SD4RK'
-VERSION = '0.1.4'
+VERSION = '0.1.5'
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
