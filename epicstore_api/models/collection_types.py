@@ -25,6 +25,18 @@ SOFTWARE.
 """
 
 
-from .categories import EGSCategory
-from .product_types import EGSProductType
-from .collection_types import EGSCollectionType
+from enum import Enum
+
+
+class EGSCollectionType(Enum):
+    """A helper enum that is used for the collections query
+    (see :meth:`epicstore_api.api.EpicGamesStoreAPI.get_collection`). You can see the game that fall under particular
+    collections under the free games on the main page of the Epic Games Store. Collections that are not included
+    (such as New Releases and Coming Soon can be obtained through catalog query with specific sort queries such as
+    sortBy=releaseDate and sortBy=comingSoon)."""
+    TOP_SELLERS = "top-sellers"
+    MOST_PLAYED = "most-played"
+    TOP_UPCOMING_WISHLISTED = "top-wishlisted"
+    MOST_POPULAR = "most-popular"
+    TOP_PLAYER_RATED = "top-player-reviewed"
+
