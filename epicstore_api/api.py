@@ -436,8 +436,8 @@ class EpicGamesStoreAPI:
         self,
         query_string,
         headers={},
-        suppress_errors=False,
         *multiple_query_variables,
+        suppress_errors=False,
         **variables
     ) -> dict:
         if not multiple_query_variables:
