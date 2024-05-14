@@ -1,13 +1,11 @@
-from epicstore_api import EpicGamesStoreAPI
 import json
 
+from epicstore_api import EpicGamesStoreAPI
 
-def main():
-    """
-    Print all games in filter range
-    """
-    api = EpicGamesStoreAPI()
-    games = api.fetch_store_games(
+
+def main() -> None:
+    """Print all games in filter range."""
+    games = EpicGamesStoreAPI().fetch_store_games(
         product_type='games/edition/base|bundles/games|editors',
         # Default filter in store page.
         count=30,

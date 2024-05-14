@@ -1,7 +1,4 @@
-# -*- coding: utf-8 -*-
-
-"""
-Epic Games Store API Wrapper
+"""Epic Games Store API Wrapper.
 ~~~~~~~~~~~~~~~~~~~
 
 An API wrapper for Epic Games Store
@@ -10,6 +7,6 @@ An API wrapper for Epic Games Store
 :license: MIT, see LICENSE for more details.
 """
 
-from .api import *
-from .models import *
-from .exc import EGSException, EGSNotFound
+from epicstore_api.api import *
+from epicstore_api.exc import EGSException, EGSNotFound
+from epicstore_api.models import *

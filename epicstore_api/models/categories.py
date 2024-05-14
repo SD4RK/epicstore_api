@@ -1,7 +1,4 @@
-# -*- coding: utf-8 -*-
-
-"""
-MIT License
+"""MIT License.
 
 Copyright (c) 2020-2023 SD4RK
 
@@ -28,9 +25,8 @@ from enum import Enum
 
 
 class EGSCategory(Enum):
-    """
-    Class that provides a code for every category in the EGS with
-    a human-readable name and a few useful methods
+    """Class that provides a code for every category in the EGS with
+    a human-readable name and a few useful methods.
 
     .. note::
       Here you can see only that categories that are displayed in EGS,
@@ -54,11 +50,10 @@ class EGSCategory(Enum):
 
     @staticmethod
     def join_categories(*categories_list) -> str:
-        """
-        Joins the given categories into a string for EGS API queries
+        """Joins the given categories into a string for EGS API queries
         :param categories_list: list of categories you need
         :type categories_list: List[EGSCategory]
-        :rtype: str
+        :rtype: str.
         """
         return '|'.join([category.value for category in categories_list])
 

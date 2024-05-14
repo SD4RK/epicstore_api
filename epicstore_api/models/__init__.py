@@ -1,7 +1,4 @@
-# -*- coding: utf-8 -*-
-
-"""
-MIT License
+"""MIT License.
 
 Copyright (c) 2020-2023 SD4RK
 
@@ -24,6 +21,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from .categories import EGSCategory
-from .product_types import EGSProductType
-from .collection_types import EGSCollectionType
+from epicstore_api.models.categories import EGSCategory
+from epicstore_api.models.collection_types import EGSCollectionType
+from epicstore_api.models.product_types import EGSProductType

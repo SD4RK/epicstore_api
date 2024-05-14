@@ -10,10 +10,10 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
-import os
 import sys
+from pathlib import Path
 
-sys.path.insert(0, os.path.abspath('../../'))
+sys.path.insert(0, str(Path('../../').resolve()))
 
 
 # -- Project information -----------------------------------------------------
@@ -36,7 +36,7 @@ templates_path = ['_templates']
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
-exclude_patterns = []
+exclude_patterns: list = []
 
 
 # -- Options for HTML output -------------------------------------------------
@@ -54,11 +54,11 @@ html_static_path = ['_static']
 master_doc = 'index'  # for old versions of sphinx
 
 
-def remove_module_docstring(app, what, name, obj, options, lines):
+def remove_module_docstring(app, what, name, obj, options, lines) -> None:
     print(app, what, name, obj, options, lines)
     if what == "module" and "epicstore_api" in name:
         del lines[:]
 
 
-def setup(app):
+def setup(app) -> None:
     app.connect("autodoc-process-docstring", remove_module_docstring)
