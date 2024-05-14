@@ -24,7 +24,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-
 from enum import Enum
 
 
@@ -34,9 +33,9 @@ class EGSCollectionType(Enum):
     collections under the free games on the main page of the Epic Games Store. Collections that are not included
     (such as New Releases and Coming Soon can be obtained through catalog query with specific sort queries such as
     sortBy=releaseDate and sortBy=comingSoon)."""
+
     TOP_SELLERS = "top-sellers"
     MOST_PLAYED = "most-played"
     TOP_UPCOMING_WISHLISTED = "top-wishlisted"
     MOST_POPULAR = "most-popular"
     TOP_PLAYER_RATED = "top-player-reviewed"
-

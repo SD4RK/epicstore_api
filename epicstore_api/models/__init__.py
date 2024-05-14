@@ -24,7 +24,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-
 from .categories import EGSCategory
 from .product_types import EGSProductType
 from .collection_types import EGSCollectionType

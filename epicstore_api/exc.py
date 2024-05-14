@@ -29,6 +29,7 @@ class EGSException(Exception):
     """
     Class for EGS errors, all data about error is placed in ``exception_data``
     """
+
     def __init__(self, message, error_code=None, service_response=None):
         super().__init__(message)
         self.message = (
@@ -46,4 +47,5 @@ class EGSNotFound(EGSException):
     """
     All errors which error code ends with `not_found`
     """
+
     pass

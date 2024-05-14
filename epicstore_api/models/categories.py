@@ -24,7 +24,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-
 from enum import Enum
 
 
@@ -38,6 +37,7 @@ class EGSCategory(Enum):
       for other categories you can call an API function
       :meth:`epicstore_api.api.EpicGamesStoreAPI.fetch_catalog_tags`
     """
+
     CATEGORY_ACTION = "1216"  #: Action games
     CATEGORY_EDITOR = "9559"  #: Editors for games
     CATEGORY_ADVENTURE = "1117"  #: Adventure games
