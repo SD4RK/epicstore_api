@@ -1,10 +1,11 @@
+from pathlib import Path
+
 import setuptools
 
 AUTHOR = 'SD4RK'
 VERSION = '0.1.7'
 
-with open("README.md", "r") as fh:
-    long_description = fh.read()
+long_description = Path("README.md").read_text()
 
 setuptools.setup(
     name='epicstore_api',
@@ -33,5 +34,5 @@ setuptools.setup(
         'Topic :: Software Development :: Libraries :: Python Modules',
         'Topic :: Utilities',
     ],
-    python_requires='>=3.7'
+    python_requires='>=3.7',
 )

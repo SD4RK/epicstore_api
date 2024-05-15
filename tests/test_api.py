@@ -1,8 +1,9 @@
 import pytest
-from epicstore_api import EpicGamesStoreAPI, EGSException
+
+from epicstore_api import EGSException, EpicGamesStoreAPI
 
 
-def main():
+def main() -> None:
     api = EpicGamesStoreAPI()
     with pytest.raises(EGSException):
         api.get_product('this_slug_does_not_exist')

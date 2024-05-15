@@ -1,7 +1,4 @@
-# -*- coding: utf-8 -*-
-
-"""
-MIT License
+"""MIT License.
 
 Copyright (c) 2020-2023 SD4RK
 
@@ -24,20 +21,19 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-
 from enum import Enum
 
 
 class EGSCategory(Enum):
-    """
-    Class that provides a code for every category in the EGS with
-    a human-readable name and a few useful methods
+    """Class that provides a code for every category in the EGS with
+    a human-readable name and a few useful methods.
 
     .. note::
       Here you can see only that categories that are displayed in EGS,
       for other categories you can call an API function
       :meth:`epicstore_api.api.EpicGamesStoreAPI.fetch_catalog_tags`
     """
+
     CATEGORY_ACTION = "1216"  #: Action games
     CATEGORY_EDITOR = "9559"  #: Editors for games
     CATEGORY_ADVENTURE = "1117"  #: Adventure games
@@ -54,11 +50,10 @@ class EGSCategory(Enum):
 
     @staticmethod
     def join_categories(*categories_list) -> str:
-        """
-        Joins the given categories into a string for EGS API queries
+        """Joins the given categories into a string for EGS API queries
         :param categories_list: list of categories you need
         :type categories_list: List[EGSCategory]
-        :rtype: str
+        :rtype: str.
         """
         return '|'.join([category.value for category in categories_list])
 

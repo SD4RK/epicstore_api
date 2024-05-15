@@ -1,7 +1,4 @@
-# -*- coding: utf-8 -*-
-
-"""
-MIT License
+"""MIT License.
 
 Copyright (c) 2020-2023 SD4RK
 
@@ -24,23 +21,26 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-
 import json
+from typing import NamedTuple
+
 import requests
-from typing import Union, List, NamedTuple
-from .exc import EGSNotFound, EGSException
-from .models import EGSCategory, EGSProductType, EGSCollectionType
-from .queries import (CATALOG_QUERY,
-                      PROMOTIONS_QUERY,
-                      CATALOG_TAGS_QUERY,
-                      FEED_QUERY,
-                      PREREQUISITES_QUERY,
-                      OFFERS_QUERY,
-                      STORE_QUERY,
-                      ADDONS_QUERY,
-                      MEDIA_QUERY,
-                      PRODUCT_REVIEWS_QUERY,
-                      COLLECTION_QUERY)
+
+from epicstore_api.exc import EGSException, EGSNotFound
+from epicstore_api.models import EGSCategory, EGSCollectionType, EGSProductType
+from epicstore_api.queries import (
+    ADDONS_QUERY,
+    CATALOG_QUERY,
+    CATALOG_TAGS_QUERY,
+    COLLECTION_QUERY,
+    FEED_QUERY,
+    MEDIA_QUERY,
+    OFFERS_QUERY,
+    PREREQUISITES_QUERY,
+    PRODUCT_REVIEWS_QUERY,
+    PROMOTIONS_QUERY,
+    STORE_QUERY,
+)
 
 
 class OfferData(NamedTuple):
@@ -58,21 +58,18 @@ def _clean_1004_errors(raw):
     if 'errors' in raw:
         for error in raw['errors'].copy():
             service_response = json.loads(error.get('serviceResponse', {}))
-            if service_response:
-                if service_response.get('numericErrorCode') == 1004:
-                    raw['errors'].remove(error)
+            if service_response and service_response.get('numericErrorCode') == 1004:
+                raw['errors'].remove(error)
         if not raw['errors']:
             raw.pop('errors')
     return raw
 
 
 class EpicGamesStoreAPI:
-    """
-    Class for interacting with EGS web API without user credentials TODO?
-    """
-    def __init__(self, locale="en-US", country="US", session=None):
-        """
-        :param locale: EGS locale (this parameter depends on responses locale)
+    """Class for interacting with EGS web API without user credentials TODO?."""
+
+    def __init__(self, locale="en-US", country="US", session=None) -> None:
+        """:param locale: EGS locale (this parameter depends on responses locale)
         :param country: EGS country
         """
         self._session = requests.Session() or session
@@ -81,9 +78,7 @@ class EpicGamesStoreAPI:
 
     def get_product_mapping(self) -> dict:
         """Returns product mapping in {namespace: slug} format."""
-        return self._make_api_query(
-            '/content/productmapping', method='GET'
-        )
+        return self._make_api_query('/content/productmapping', method='GET')
 
     def get_product(self, slug: str) -> dict:
         """Returns a product's data by slug.
@@ -91,44 +86,41 @@ class EpicGamesStoreAPI:
         :param slug: Product's slug.
         """
         return self._make_api_query(
-            f'/content/products/{slug}', method='GET', use_locale=True
+            f'/content/products/{slug}',
+            method='GET',
+            use_locale=True,
         )
 
     def get_store(self) -> dict:
         """Returns a JSON data about store page."""
-        return self._make_api_query(
-            '/content/store', method='GET', use_locale=True
-        )
+        return self._make_api_query('/content/store', method='GET', use_locale=True)
 
-    def get_free_games(self, allow_countries: str = None) -> dict:
+    def get_free_games(self, allow_countries: str | None = None) -> dict:
         """Returns the games from "Free Games" section in the EGS."""
         if allow_countries is None:
             allow_countries = self.country
         api_uri = (
             'https://store-site-backend-static.ak.epicgames.com/'
-            'freeGamesPromotions?locale={}&country={}&allowCountries={}'
+            f'freeGamesPromotions?locale={self.locale}&country={self.country}&allowCountries={allow_countries}'
         )
-        api_uri = api_uri.format(self.locale, self.country, allow_countries)
         data = _clean_1004_errors(self._session.get(api_uri).json())
         self._get_errors(data)
         return data
 
     def get_mver_status(self) -> bool:
-        return self._make_api_query(
-            '/mver-status', method='GET'
-        )['result']
+        return self._make_api_query('/mver-status', method='GET')['result']
 
     def get_epic_store_status(self) -> dict:
         """Returns an Epic Games Store server status."""
         return self._session.get(
-            'https://status.epicgames.com/api/v2/status.json'
+            'https://status.epicgames.com/api/v2/status.json',
         ).json()
 
     def get_offers_data(
         self,
         *offers: OfferData,
         should_calculate_tax: bool = False,
-        include_sub_items: bool = False
+        include_sub_items: bool = False,
     ) -> dict:
         """Get offer(s) full data by offers' id and namespace.
 
@@ -139,16 +131,16 @@ class EpicGamesStoreAPI:
         return self._make_graphql_query(
             OFFERS_QUERY,
             {},
-            *[{
-                'productNamespace': offer.namespace,
-                'offerId': offer.offer_id,
-                'lineOffers': [{
+            *[
+                {
+                    'productNamespace': offer.namespace,
                     'offerId': offer.offer_id,
-                    'quantity': 1
-                }],
-                'calculateTax': should_calculate_tax,
-                'includeSubItems': include_sub_items
-            } for offer in offers]
+                    'lineOffers': [{'offerId': offer.offer_id, 'quantity': 1}],
+                    'calculateTax': should_calculate_tax,
+                    'includeSubItems': include_sub_items,
+                }
+                for offer in offers
+            ],
         )
 
     def get_collection(self, collection: EGSCollectionType) -> dict:
@@ -158,14 +150,15 @@ class EpicGamesStoreAPI:
         :param collection: Needed collection type.
         """
         # Cleanup for the 1004 errors that always pop up by default to not mess someone up by this.
-        raw = _clean_1004_errors(self._make_graphql_query(
-            COLLECTION_QUERY,
-            slug=collection.value,
-            # This query always returns 1004 error by default. That is not controlled by us and the error itself
-            # is happening even in the official EGS client itself, they're just ignoring it, so we will too.
-            suppress_errors=True
-        ))
-        return raw
+        return _clean_1004_errors(
+            self._make_graphql_query(
+                COLLECTION_QUERY,
+                slug=collection.value,
+                # This query always returns 1004 error by default. That is not controlled by us and the error itself
+                # is happening even in the official EGS client itself, they're just ignoring it, so we will too.
+                suppress_errors=True,
+            ),
+        )
 
     def fetch_media(self, media_ref_id: str) -> dict:
         """Returns media-file (type of the file, its url and so on) by the
@@ -173,20 +166,16 @@ class EpicGamesStoreAPI:
 
         :param media_ref_id: File's media ref ID.
         """
-        return self._make_graphql_query(
-            MEDIA_QUERY,
-            mediaRefId=media_ref_id
-        )
+        return self._make_graphql_query(MEDIA_QUERY, mediaRefId=media_ref_id)
 
     def fetch_multiple_media_files(self, *media_ref_ids: str):
         """Equivalent to `fetch_media` function, except this one can fetch
-        a few media files at the same moment (using only one request)."""
+        a few media files at the same moment (using only one request).
+        """
         return self._make_graphql_query(
             MEDIA_QUERY,
             {},
-            *[{
-                'mediaRefId': media_ref_id
-            } for media_ref_id in media_ref_ids]
+            *[{'mediaRefId': media_ref_id} for media_ref_id in media_ref_ids],
         )
 
     def get_addons_by_namespace(
@@ -195,7 +184,7 @@ class EpicGamesStoreAPI:
         categories: str = 'addons|digitalextras',
         count: int = 250,
         sort_by: str = 'releaseDate',
-        sort_dir: str = 'DESC'
+        sort_dir: str = 'DESC',
     ):
         """Returns product's addons by product's namespace.
 
@@ -212,27 +201,30 @@ class EpicGamesStoreAPI:
         """
         sort_dir = sort_dir.upper()
         if sort_dir not in ('ASC', 'DESC'):
-            raise ValueError(f'Parameter ``sort_dir`` have to be equals to'
-                             f' ASC or DESC, not to {sort_dir}')
+            msg = (
+                f'Parameter ``sort_dir`` have to be equals to'
+                f' ASC or DESC, not to {sort_dir}'
+            )
+            raise ValueError(
+                msg,
+            )
         return self._make_graphql_query(
             ADDONS_QUERY,
             namespace=namespace,
             count=count,
             categories=categories,
             sortBy=sort_by,
-            sortDir=sort_dir
+            sortDir=sort_dir,
         )
 
     def get_product_reviews(self, product_sku: str) -> dict:
         """Returns product's reviews by product's sku.
 
         :param product_sku: SKU of the Product. Usually just slug of the
-        product with `EPIC_` prefix."""
+        product with `EPIC_` prefix.
+        """
         try:
-            return self._make_graphql_query(
-                PRODUCT_REVIEWS_QUERY,
-                sku=product_sku
-            )
+            return self._make_graphql_query(PRODUCT_REVIEWS_QUERY, sku=product_sku)
         except EGSNotFound as exc:
             exc.message = (
                 'There are no reviews for this product, '
@@ -241,24 +233,19 @@ class EpicGamesStoreAPI:
             raise
 
     def fetch_prerequisites(self, *offers: OfferData) -> dict:
-        """Fetches offer(s) prerequisites
+        """Fetches offer(s) prerequisites.
 
         :param offers: Offer(s) we need to get prerequisites from
         """
         return self._make_graphql_query(
             PREREQUISITES_QUERY,
-            offerParams=[{
-                'offerId': offer.offer_id,
-                'namespace': offer.namespace
-            } for offer in offers]  # OfferData -> dict for every offer in list
+            offerParams=[
+                {'offerId': offer.offer_id, 'namespace': offer.namespace}
+                for offer in offers
+            ],  # OfferData -> dict for every offer in list
         )
 
-    def fetch_feed(
-        self,
-        offset: int = 0,
-        count: int = 10,
-        category: str = ''
-    ) -> dict:
+    def fetch_feed(self, offset: int = 0, count: int = 10, category: str = '') -> dict:
         """Fetches Epic Games Store feed by given params.
 
         :param offset: From which news (index) we need to start.
@@ -270,41 +257,35 @@ class EpicGamesStoreAPI:
             offset=offset,
             countryCode=self.country,
             postsPerPage=count,
-            category=category
+            category=category,
         )
 
     def fetch_catalog_tags(self, namespace: str = 'epic') -> dict:
-        """Fetches tags for a products with namespace ``namespace``
+        """Fetches tags for a products with namespace ``namespace``.
 
         :param namespace: Products' namespace (**epic** = all)
         """
-        return self._make_graphql_query(
-            CATALOG_TAGS_QUERY,
-            namespace=namespace
-        )
+        return self._make_graphql_query(CATALOG_TAGS_QUERY, namespace=namespace)
 
     def fetch_promotions(self, namespace: str = 'epic') -> dict:
         """Fetches a global promotions.
 
         :param namespace: Products' namespace (**epic** = all).
         """
-        return self._make_graphql_query(
-            PROMOTIONS_QUERY,
-            namespace=namespace
-        )
+        return self._make_graphql_query(PROMOTIONS_QUERY, namespace=namespace)
 
     def fetch_catalog(
         self,
         count: int = 30,
-        product_type: Union[EGSProductType, str] = EGSProductType.ALL_PRODUCTS,
+        product_type: EGSProductType | str = EGSProductType.ALL_PRODUCTS,
         namespace: str = 'epic',
         sort_by: str = 'effectiveDate',
         sort_dir: str = 'DESC',
         start: int = 0,
         keywords: str = '',
-        categories: List[EGSCategory] = None
+        categories: list[EGSCategory] | str | None = None,
     ) -> dict:
-        """Fetches a catalog with given parameters
+        """Fetches a catalog with given parameters.
 
         :param count: Count of  products you need to fetch.
         :param product_type: Product type(s) you need to get from EGS.
@@ -323,8 +304,13 @@ class EpicGamesStoreAPI:
         """
         sort_dir = sort_dir.upper()
         if sort_dir not in ('ASC', 'DESC'):
-            raise ValueError(f'Parameter ``sort_dir`` have to be equals to'
-                             f' ASC or DESC, not to {sort_dir}')
+            msg = (
+                f'Parameter ``sort_dir`` have to be equals to'
+                f' ASC or DESC, not to {sort_dir}'
+            )
+            raise ValueError(
+                msg,
+            )
         if categories is None:
             categories = ''
         else:
@@ -340,24 +326,25 @@ class EpicGamesStoreAPI:
             sortDir=sort_dir,
             start=start,
             keywords=keywords,
-            tag=categories
+            tag=categories,
         )
 
     def fetch_store_games(
         self,
         count: int = 30,
-        product_type: Union[EGSProductType, str] = EGSProductType.ALL_PRODUCTS,
+        product_type: EGSProductType | str = EGSProductType.ALL_PRODUCTS,
         allow_countries: str = 'US',
         namespace: str = '',
         sort_by: str = 'title',
         sort_dir: str = 'ASC',
-        release_date: str = None,
+        release_date: str | None = None,
         start: int = 0,
         keywords: str = '',
-        categories: List[EGSCategory] = None,
-        with_price: bool = True
+        categories: list[EGSCategory] | str | None = None,
+        *,
+        with_price: bool = True,
     ) -> dict:
-        """Fetches a store games with given parameters
+        """Fetches a store games with given parameters.
 
         :param count: Count of  products you need to fetch.
         :param product_type: Product type(s) you need to get from EGS.
@@ -388,8 +375,13 @@ class EpicGamesStoreAPI:
         """
         sort_dir = sort_dir.upper()
         if sort_dir not in ('ASC', 'DESC'):
-            raise ValueError(f'Parameter ``sort_dir`` have to be equals to'
-                             f' ASC or DESC, not to {sort_dir}')
+            msg = (
+                f'Parameter ``sort_dir`` have to be equals to'
+                f' ASC or DESC, not to {sort_dir}'
+            )
+            raise ValueError(
+                msg,
+            )
         if categories is None:
             categories = ''
         else:
@@ -409,25 +401,24 @@ class EpicGamesStoreAPI:
             start=start,
             keywords=keywords,
             tag=categories,
-            withPrice=with_price
+            withPrice=with_price,
         )
 
     def _make_api_query(
         self,
         endpoint: str,
         method: str,
+        *,
         use_locale: bool = False,
-        **variables
+        **variables,
     ) -> dict:
         func = getattr(self._session, method.lower())
         base_url = 'https://store-content.ak.epicgames.com'
         base_url += '/api' if not use_locale else f'/api/{self.locale}'
-        response = func(
-            base_url + endpoint,
-            data=variables
-        )
+        response = func(base_url + endpoint, data=variables)
         if response.status_code == 404:
-            raise EGSException(f'Page with endpoint {endpoint} was not found')
+            msg = f'Page with endpoint {endpoint} was not found'
+            raise EGSException(msg)
         response = response.json()
         self._get_errors(response)
         return response
@@ -435,11 +426,13 @@ class EpicGamesStoreAPI:
     def _make_graphql_query(
         self,
         query_string,
-        headers={},
+        headers=None,
         *multiple_query_variables,
         suppress_errors=False,
-        **variables
+        **variables,
     ) -> dict:
+        if headers is None:
+            headers = {}
         if not multiple_query_variables:
             variables.update({'locale': self.locale, 'country': self.country})
             # This variables are default and exist in all graphql queries
@@ -456,21 +449,18 @@ class EpicGamesStoreAPI:
                     'country': self.country,
                 }
                 variables_.update(variables)
-                data.append({
-                    'query': query_string,
-                    'variables': variables_
-                })
+                data.append({'query': query_string, 'variables': variables_})
             response = self._session.post(
                 'https://graphql.epicgames.com/graphql',
                 json=data,
-                headers=headers
+                headers=headers,
             ).json()
         if not suppress_errors:
             self._get_errors(response)
         return response
 
     @staticmethod
-    def _get_errors(resp):
+    def _get_errors(resp) -> None:
         r = []
         if not isinstance(resp, list):
             r.append(resp)
@@ -478,24 +468,24 @@ class EpicGamesStoreAPI:
             if response.get('errors'):
                 error = response['errors'][0]
                 if not error['serviceResponse']:
-                    raise EGSException(
-                        error['message'],
-                        service_response=error
-                    )
-                service_response = json.loads(
-                    error['serviceResponse']
-                )
+                    raise EGSException(error['message'], service_response=error)
+                service_response = json.loads(error['serviceResponse'])
                 if isinstance(service_response, dict):
                     if service_response['errorCode'].endswith('not_found'):
                         raise EGSNotFound(
                             service_response['errorMessage'],
                             service_response['numericErrorCode'],
-                            service_response
+                            service_response,
                         )
-                elif isinstance(service_response, str):
-                    if service_response == 'not found':
-                        raise EGSNotFound(
-                            'The resource was not found, '
-                            'No more data provided by Epic Games Store.'
-                        )
+                elif (
+                    isinstance(service_response, str)
+                    and service_response == 'not found'
+                ):
+                    msg = (
+                        'The resource was not found, '
+                        'No more data provided by Epic Games Store.'
+                    )
+                    raise EGSNotFound(
+                        msg,
+                    )
                 # FIXME: Need to handle more errors than the code is handling now

@@ -1,7 +1,4 @@
-# -*- coding: utf-8 -*-
-
-"""
-MIT License
+"""MIT License.
 
 Copyright (c) 2020-2023 SD4RK
 
@@ -26,10 +23,9 @@ SOFTWARE.
 
 
 class EGSException(Exception):
-    """
-    Class for EGS errors, all data about error is placed in ``exception_data``
-    """
-    def __init__(self, message, error_code=None, service_response=None):
+    """Class for EGS errors, all data about error is placed in ``exception_data``."""
+
+    def __init__(self, message, error_code=None, service_response=None) -> None:
         super().__init__(message)
         self.message = (
             f'Error code: '
@@ -38,12 +34,9 @@ class EGSException(Exception):
         )
         self.exception_data = service_response
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.message
 
 
 class EGSNotFound(EGSException):
-    """
-    All errors which error code ends with `not_found`
-    """
-    pass
+    """All errors which error code ends with `not_found`."""

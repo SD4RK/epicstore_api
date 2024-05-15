@@ -1,7 +1,4 @@
-# -*- coding: utf-8 -*-
-
-"""
-MIT License
+"""MIT License.
 
 Copyright (c) 2020-2023 SD4RK
 
@@ -24,7 +21,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-
 from enum import Enum
 
 
@@ -32,8 +28,6 @@ class EGSProductType(Enum):
     PRODUCT_ENGINE = "engines"  #: Engines for developing games
     PRODUCT_GAME = "games"  #: Games
     PRODUCT_BUNDLE = "bundles"  #: An EGS bundle
-    ALL_PRODUCTS = "|".join([
-        PRODUCT_ENGINE,
-        PRODUCT_GAME,
-        PRODUCT_BUNDLE
-    ])  #: All possible products
+    ALL_PRODUCTS = (
+        f"{PRODUCT_ENGINE}|{PRODUCT_GAME}|{PRODUCT_BUNDLE}"  #: All possible products
+    )
