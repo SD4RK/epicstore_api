@@ -40,12 +40,13 @@ You can see other examples in ``examples/`` directory:
     from epicstore_api import EpicGamesStoreAPI, OfferData
 
     api = EpicGamesStoreAPI()
-    namespace, slug = list(api.get_product_mapping().items())[0]
+    namespace, slug = next(iter(api.get_product_mapping().items()))
     first_product = api.get_product(slug)
-    offers = []
-    for page in first_product['pages']:
-        if page.get('offer') is not None:
-            offers.append(OfferData(page['namespace'], page['offer']['id']))
+    offers = [
+        OfferData(page['namespace'], page['offer']['id'])
+        for page in first_product['pages']
+        if page.get('offer') and 'id' in page['offer']
+    ]
     offers_data = api.get_offers_data(*offers)
     for offer_data in offers_data:
         data = offer_data['data']['Catalog']['catalogOffer']

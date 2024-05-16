@@ -19,7 +19,7 @@ sys.path.insert(0, str(Path('../../').resolve()))
 # -- Project information -----------------------------------------------------
 
 project = 'epicstore_api'
-copyright = '2023, SD4RK'
+copyright = '2024, SD4RK'
 author = 'SD4RK'
 
 
