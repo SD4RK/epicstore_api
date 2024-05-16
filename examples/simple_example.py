@@ -9,7 +9,7 @@ def main() -> None:
     offers = [
         OfferData(page['namespace'], page['offer']['id'])
         for page in first_product['pages']
-        if page.get('offer')
+        if page.get('offer') and 'id' in page['offer']
     ]
     offers_data = api.get_offers_data(*offers)
     for offer_data in offers_data:
