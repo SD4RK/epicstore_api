@@ -18,7 +18,11 @@ def main() -> None:
     for game in free_games:
         game_title = game['title']
         game_publisher = game['seller']['name']
-        game_url = f"https://store.epicgames.com/fr/p/{game['catalogNs']['mappings'][0]['pageSlug']}"
+
+        url_type = "bundles" if game['offerType'] == "BUNDLE" else "p"
+        final_slug = game["catalogNs"]["mappings"][0]["pageSlug"] if game["catalogNs"]["mappings"] else game["urlSlug"]
+        game_url = f"https://store.epicgames.com/fr/{url_type}/{final_slug}"
+
         # Can be useful when you need to also show the thumbnail of the game.
         # Like in Discord's embeds for example, or anything else.
         # Here I showed it just as example and won't use it.
