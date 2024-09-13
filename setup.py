@@ -3,7 +3,7 @@ from pathlib import Path
 import setuptools
 
 AUTHOR = 'SD4RK'
-VERSION = '0.1.8'
+VERSION = '0.1.9'
 
 long_description = Path("README.md").read_text()
 
