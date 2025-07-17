@@ -73,7 +73,7 @@ class EpicGamesStoreAPI:
         :param country: EGS country
         """
         self._session = requests.Session() or session
-        self._graphql_url = "https://graphql.epicgames.com/graphql"
+        self._graphql_url = "https://store.epicgames.com/graphql"
         self.locale = locale
         self.country = country
 
