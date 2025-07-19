@@ -24,7 +24,7 @@ SOFTWARE.
 import json
 from typing import NamedTuple
 
-import requests
+import cloudscraper
 
 from epicstore_api.exc import EGSException, EGSNotFound
 from epicstore_api.models import EGSCategory, EGSCollectionType, EGSProductType
@@ -72,7 +72,8 @@ class EpicGamesStoreAPI:
         """:param locale: EGS locale (this parameter depends on responses locale)
         :param country: EGS country
         """
-        self._session = requests.Session() or session
+        self._session = session or cloudscraper.create_scraper()
+        self._graphql_url = "https://store.epicgames.com/graphql"
         self.locale = locale
         self.country = country
 
@@ -437,7 +438,7 @@ class EpicGamesStoreAPI:
             variables.update({'locale': self.locale, 'country': self.country})
             # This variables are default and exist in all graphql queries
             response = self._session.post(
-                'https://graphql.epicgames.com/graphql',
+                self._graphql_url,
                 json={'query': query_string, 'variables': variables},
                 headers=headers,
             ).json()
@@ -451,7 +452,7 @@ class EpicGamesStoreAPI:
                 variables_.update(variables)
                 data.append({'query': query_string, 'variables': variables_})
             response = self._session.post(
-                'https://graphql.epicgames.com/graphql',
+                self._graphql_url,
                 json=data,
                 headers=headers,
             ).json()

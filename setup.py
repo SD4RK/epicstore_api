@@ -17,7 +17,7 @@ setuptools.setup(
     url='https://github.com/SD4RK/epicstore_api',
     license='MIT',
     include_package_data=True,
-    install_requires=['requests>=2.28.1'],
+    install_requires=['cloudscraper>=1.2.71'],
     download_url=f'https://github.com/SD4RK/epicstore_api/archive/v_{VERSION}.tar.gz',
     packages=setuptools.find_packages(),
     classifiers=[
