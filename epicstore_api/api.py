@@ -24,7 +24,7 @@ SOFTWARE.
 import json
 from typing import NamedTuple
 
-import requests
+import cloudscraper
 
 from epicstore_api.exc import EGSException, EGSNotFound
 from epicstore_api.models import EGSCategory, EGSCollectionType, EGSProductType
@@ -72,7 +72,7 @@ class EpicGamesStoreAPI:
         """:param locale: EGS locale (this parameter depends on responses locale)
         :param country: EGS country
         """
-        self._session = requests.Session() or session
+        self._session = cloudscraper.create_scraper() or session
         self._graphql_url = "https://store.epicgames.com/graphql"
         self.locale = locale
         self.country = country
