@@ -72,7 +72,7 @@ class EpicGamesStoreAPI:
         """:param locale: EGS locale (this parameter depends on responses locale)
         :param country: EGS country
         """
-        self._session = cloudscraper.create_scraper() or session
+        self._session = session or cloudscraper.create_scraper()
         self._graphql_url = "https://store.epicgames.com/graphql"
         self.locale = locale
         self.country = country
