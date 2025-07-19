@@ -5,6 +5,7 @@
 [![Downloads](https://pepy.tech/badge/epicstore-api)](https://pypi.org/project/epicstore-api/)
 
 An unofficial library to work with Epic Games Store Web API.
+**The library works with `cloudscraper` under the hood to battle the anti-bot protections, please be careful with the amount of requests you do, as this is not a silver bullet.**
 
 ## Installing
 

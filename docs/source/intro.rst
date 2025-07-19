@@ -4,7 +4,7 @@ Introduction
 ==============
 
 This is the documentation for epicstore_api,
-library for working with the Epic Games Store API
+library for working with the Epic Games Store API. The library works with `cloudscraper` under the hood to battle the anti-bot protections, please be careful with the amount of requests you do, as this is not a silver bullet.
 
 Prerequisites
 ---------------
