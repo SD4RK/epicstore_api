@@ -22,12 +22,13 @@ SOFTWARE.
 """
 
 import json
+import re
 from typing import NamedTuple
 
 import cloudscraper
 
 from epicstore_api.exc import EGSException, EGSNotFound
-from epicstore_api.models import EGSCategory, EGSCollectionType, EGSProductType
+from epicstore_api.models import EGSCategory, EGSCollectionType, EGSProductType, ESRBRating, ESRBRatingCode
 from epicstore_api.queries import (
     ADDONS_QUERY,
     CATALOG_QUERY,
@@ -405,6 +406,141 @@ class EpicGamesStoreAPI:
             withPrice=with_price,
         )
 
+    def extract_esrb_rating(self, offer_data: dict) -> ESRBRating:
+        """Extract ESRB rating information from offer data.
+
+        Searches through customAttributes for ESRB rating and content descriptors.
+
+        :param offer_data: Offer data dict (typically from GraphQL queries like
+                          fetch_store_games, fetch_catalog, get_offers_data, etc.)
+        :return: ESRBRating object with rating and descriptors, or None rating if not found
+        """
+        rating = ESRBRating()
+        custom_attrs = offer_data.get('customAttributes', [])
+        if not isinstance(custom_attrs, list):
+            return rating
+
+        for attr in custom_attrs:
+            if isinstance(attr, dict):
+                key = attr.get('key', '').lower()
+                value = attr.get('value', '')
+
+                if 'esrb' in key or 'contentrating' in key: # Mistake?
+                    rating.rating = self._parse_esrb_rating(value)
+
+                if 'descriptor' in key or 'contentdescriptor' in key:
+                    rating.descriptors = self._parse_content_descriptors(value)
+
+        rating.raw_data = custom_attrs
+        return rating
+
+    def get_free_games_with_ratings(
+        self,
+        allow_countries: str | None = None
+    ) -> dict:
+        """Get free games with ESRB rating information enriched.
+
+        This method calls get_free_games() and then fetches ESRB rating data
+        from the GraphQL API for each game using its product slug.
+
+        :param allow_countries: Products in the country. Default to API's country setting.
+        :return: Dict with 'games' list containing games with 'esrb_rating' field added
+        """
+        free_games_data = self.get_free_games(allow_countries=allow_countries)
+
+        games = free_games_data.get('data', [])
+        if not isinstance(games, list):
+            return free_games_data
+
+        enriched_games = []
+        for game in games:
+            enriched_game = game.copy()
+            product_slug = game.get('product_slug', '')
+
+            if product_slug:
+                store_result = self.fetch_store_games(
+                    keywords=product_slug,
+                    count=1,
+                    with_price=False
+                )
+
+                elements = (
+                    store_result.get('data', {})
+                    .get('Catalog', {})
+                    .get('searchStore', {})
+                    .get('elements', [])
+                )
+
+                if elements:
+                    offer_data = elements[0]
+                    esrb = self.extract_esrb_rating(offer_data)
+                    enriched_game['esrb_rating'] = {
+                        'rating': esrb.rating,
+                        'descriptors': esrb.descriptors,
+                    }
+                else:
+                    enriched_game['esrb_rating'] = {
+                        'rating': None,
+                        'descriptors': [],
+                    }
+
+            else:
+                enriched_game['esrb_rating'] = {
+                    'rating': None,
+                    'descriptors': [],
+                }
+
+            enriched_games.append(enriched_game)
+
+        result = free_games_data.copy()
+        result['data'] = enriched_games
+        return result
+
+    @staticmethod
+    def _parse_esrb_rating(value: str) -> str | None:
+        """Parse ESRB rating from attribute value.
+
+        Extracts the rating code (EC, E, E10+, T, M, AO, RP) from various formats.
+        Uses word boundaries to avoid matching partial strings.
+
+        :param value: Value from customAttribute
+        :return: ESRB rating code or None
+        """
+        if not value:
+            return None
+
+        value = value.upper().strip()
+        for rating in sorted(ESRBRatingCode, key=lambda r: len(r.value), reverse=True):
+            pattern = r'(?:^|[^A-Z0-9])' + re.escape(rating.value) + r'(?:[^A-Z0-9]|$)'
+            if re.search(pattern, value):
+                return rating.value
+
+        return None
+
+    @staticmethod
+    def _parse_content_descriptors(value: str) -> list[str]:
+        """Parse content descriptors from attribute value.
+
+        Splits descriptors by common delimiters and cleans them.
+
+        :param value: Value from customAttribute containing descriptors
+        :return: List of content descriptor strings
+        """
+        if not value:
+            return []
+
+        descriptors = []
+        for delimiter in [',', ';', '|', '\n']:
+            if delimiter in value:
+                descriptors = value.split(delimiter)
+                break
+
+        if not descriptors:
+            descriptors = [value]
+
+        cleaned = [d.strip() for d in descriptors if d.strip()]
+        return cleaned
+
     def _make_api_query(
         self,
         endpoint: str,
@@ -436,7 +572,6 @@ class EpicGamesStoreAPI:
             headers = {}
         if not multiple_query_variables:
             variables.update({'locale': self.locale, 'country': self.country})
-            # This variables are default and exist in all graphql queries
             response = self._session.post(
                 self._graphql_url,
                 json={'query': query_string, 'variables': variables},
