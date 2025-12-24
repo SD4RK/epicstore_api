@@ -572,6 +572,7 @@ class EpicGamesStoreAPI:
             headers = {}
         if not multiple_query_variables:
             variables.update({'locale': self.locale, 'country': self.country})
+            # These variables are default and exist in all graphql queries
             response = self._session.post(
                 self._graphql_url,
                 json={'query': query_string, 'variables': variables},
