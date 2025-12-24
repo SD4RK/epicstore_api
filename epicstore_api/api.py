@@ -421,18 +421,29 @@ class EpicGamesStoreAPI:
             return rating
 
         for attr in custom_attrs:
-            if isinstance(attr, dict):
-                key = attr.get('key', '').lower()
-                value = attr.get('value', '')
+            if not isinstance(attr, dict):
+                continue
 
-                if 'esrb' in key or 'contentrating' in key: # Mistake?
-                    rating.rating = self._parse_esrb_rating(value)
-
-                if 'descriptor' in key or 'contentdescriptor' in key:
-                    rating.descriptors = self._parse_content_descriptors(value)
+            self._process_rating_attribute(attr, rating)
 
         rating.raw_data = custom_attrs
         return rating
+
+    def _process_rating_attribute(self, attr: dict, rating: ESRBRating) -> None:
+        """Process a single custom attribute for ESRB rating information.
+
+        :param attr: Custom attribute dict with 'key' and 'value'
+        :param rating: ESRBRating object to update with found values
+        """
+        key = attr.get('key', '').lower()
+        value = attr.get('value', '')
+
+        if 'esrb' in key or 'contentrating' in key:
+            rating.rating = self._parse_esrb_rating(value)
+
+        if 'descriptor' in key or 'contentdescriptor' in key:
+            rating.descriptors = self._parse_content_descriptors(value)
+
 
     def get_free_games_with_ratings(
         self,
@@ -452,49 +463,77 @@ class EpicGamesStoreAPI:
         if not isinstance(games, list):
             return free_games_data
 
-        enriched_games = []
-        for game in games:
-            enriched_game = game.copy()
-            product_slug = game.get('product_slug', '')
-
-            if product_slug:
-                store_result = self.fetch_store_games(
-                    keywords=product_slug,
-                    count=1,
-                    with_price=False
-                )
-
-                elements = (
-                    store_result.get('data', {})
-                    .get('Catalog', {})
-                    .get('searchStore', {})
-                    .get('elements', [])
-                )
-
-                if elements:
-                    offer_data = elements[0]
-                    esrb = self.extract_esrb_rating(offer_data)
-                    enriched_game['esrb_rating'] = {
-                        'rating': esrb.rating,
-                        'descriptors': esrb.descriptors,
-                    }
-                else:
-                    enriched_game['esrb_rating'] = {
-                        'rating': None,
-                        'descriptors': [],
-                    }
-
-            else:
-                enriched_game['esrb_rating'] = {
-                    'rating': None,
-                    'descriptors': [],
-                }
-
-            enriched_games.append(enriched_game)
+        enriched_games = [self._enrich_game_with_rating(game) for game in games]
 
         result = free_games_data.copy()
         result['data'] = enriched_games
         return result
+
+    def _enrich_game_with_rating(self, game: dict) -> dict:
+        """Enrich a single game with ESRB rating information.
+
+        :param game: The game data to enrich
+        :return: The game data with 'esrb_rating' field added
+        """
+        enriched_game = game.copy()
+        product_slug = game.get('product_slug', '')
+
+        if not product_slug:
+            enriched_game['esrb_rating'] = self._empty_rating()
+            return enriched_game
+
+        elements = self._fetch_offer_elements(product_slug)
+        esrb_rating = self._get_esrb_for_elements(elements)
+        enriched_game['esrb_rating'] = esrb_rating
+
+        return enriched_game
+
+    def _fetch_offer_elements(self, product_slug: str) -> list:
+        """Fetch offer elements for a product slug.
+
+        :param product_slug: Product slug to search for
+        :return: List of elements from store results
+        """
+        store_result = self.fetch_store_games(
+            keywords=product_slug,
+            count=1,
+            with_price=False
+        )
+
+        return (
+            store_result.get('data', {})
+            .get('Catalog', {})
+            .get('searchStore', {})
+            .get('elements', [])
+        )
+
+    def _get_esrb_for_elements(self, elements: list) -> dict:
+        """Extract ESRB rating from offer elements or return empty rating.
+
+        :param elements: List of offer elements
+        :return: Dict with rating and descriptors
+        """
+        if not elements:
+            return self._empty_rating()
+
+        offer_data = elements[0]
+        esrb = self.extract_esrb_rating(offer_data)
+        return {
+            'rating': esrb.rating,
+            'descriptors': esrb.descriptors,
+        }
+
+    @staticmethod
+    def _empty_rating() -> dict:
+        """Create an empty ESRB rating structure.
+
+        :return: Dict with None rating and empty descriptors
+        """
+        return {
+            'rating': None,
+            'descriptors': [],
+        }
+
 
     @staticmethod
     def _parse_esrb_rating(value: str) -> str | None:
@@ -529,17 +568,21 @@ class EpicGamesStoreAPI:
         if not value:
             return []
 
-        descriptors = []
-        for delimiter in [',', ';', '|', '\n']:
-            if delimiter in value:
-                descriptors = value.split(delimiter)
-                break
-
-        if not descriptors:
-            descriptors = [value]
-
+        descriptors = EpicGamesStoreAPI._split_descriptors(value)
         cleaned = [d.strip() for d in descriptors if d.strip()]
         return cleaned
+
+    @staticmethod
+    def _split_descriptors(value: str) -> list[str]:
+        """Split descriptors by common delimiters.
+
+        :param value: String containing descriptors
+        :return: List of split descriptors
+        """
+        for delimiter in [',', ';', '|', '\n']:
+            if delimiter in value:
+                return value.split(delimiter)
+        return [value]
 
     def _make_api_query(
         self,
