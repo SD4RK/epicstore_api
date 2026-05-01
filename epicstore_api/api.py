@@ -91,6 +91,17 @@ class EpicGamesStoreAPI:
             method='GET',
             use_locale=True,
         )
+    
+    def get_bundle(self, slug: str) -> dict:
+        """Returns a bundle's data by slug.
+        
+        :param slug: Bundle's slug.
+        """
+        return self._make_api_query(
+            f'/content/bundles/{slug}',
+            method='GET',
+            use_locale=True,
+        )
 
     def get_store(self) -> dict:
         """Returns a JSON data about store page."""
