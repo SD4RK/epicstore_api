@@ -21,7 +21,36 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from epicstore_api.models.categories import EGSCategory
-from epicstore_api.models.collection_types import EGSCollectionType
-from epicstore_api.models.product_types import EGSProductType
-from epicstore_api.models.ratings import ESRBRating, ESRBRatingCode
+from dataclasses import dataclass
+from enum import Enum
+from typing import Optional
+
+
+class ESRBRatingCode(Enum):
+    """Standard ESRB (Entertainment Software Rating Board) rating codes."""
+    EC = "EC"
+    E = "E"
+    E10_PLUS = "E10+"
+    T = "T"
+    M = "M"
+    AO = "AO"
+    RP = "RP"
+
+
+@dataclass
+class ESRBRating:
+    """Represents the ESRB rating of a game.
+
+    Attributes:
+        rating: ESRB rating code (EC, E, E10+, T, M, AO, RP)
+        descriptors: List of content descriptors (e.g., Blood, Violence, Nudity)
+        raw_data: Original data from the API as reference point
+    """
+    rating: Optional[str] = None
+    descriptors: list[str] = None
+    raw_data: Optional[list | dict] = None
+
+    def __post_init__(self):
+        if self.descriptors is None:
+            self.descriptors = []
+
